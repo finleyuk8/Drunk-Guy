@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerMove : MonoBehaviour
 {
@@ -20,6 +21,9 @@ public class PlayerMove : MonoBehaviour
     private bool alreadyAttacked;
     private Transform targetEnemy;
 
+    [SerializeField] private GameObject healthBar; // Reference to the healthbar GameObject
+    private Slider healthSlider; // We'll get the Slider component from the healthBar
+
     void Start()
     {
         myCC = GetComponent<CharacterController>();
@@ -29,6 +33,25 @@ public class PlayerMove : MonoBehaviour
         }
         currentHealth = maxHealth;
         alreadyAttacked = false;
+
+        // Get the Slider component from the healthbar GameObject
+        if (healthBar != null)
+        {
+            healthSlider = healthBar.GetComponent<Slider>();
+            if (healthSlider != null)
+            {
+                healthSlider.maxValue = maxHealth;
+                healthSlider.value = currentHealth;
+            }
+            else
+            {
+                Debug.LogError("No Slider component found on the healthBar GameObject!");
+            }
+        }
+        else
+        {
+            Debug.LogError("HealthBar reference is not set in the Inspector!");
+        }
     }
 
     void Update()
@@ -114,6 +137,13 @@ public class PlayerMove : MonoBehaviour
     {
         currentHealth -= damage;
         Debug.Log($"Player took {damage} damage. Current health: {currentHealth}");
+
+        // Update the health slider
+        if (healthSlider != null)
+        {
+            healthSlider.value = currentHealth;
+        }
+
         if (currentHealth <= 0)
         {
             Die();
@@ -132,4 +162,3 @@ public class PlayerMove : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }
-
