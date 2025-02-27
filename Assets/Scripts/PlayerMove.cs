@@ -3,49 +3,49 @@ using UnityEngine.UI;
 
 public class PlayerMove : MonoBehaviour
 {
-    public float playerSpeed = 20f;
-    public float rotationSpeed = 10f;
-    private CharacterController myCC;
-    private Vector3 inputVector;
-    private Vector3 movementVector;
-    private float myGravity = -10f;
+    public float playerSpeed = 20f; // Speed of the player
+    public float rotationSpeed = 10f; // Speed of the player rotation
+    private CharacterController myCC; // Reference to the CharacterController component
+    private Vector3 inputVector; // Vector to store the input values
+    private Vector3 movementVector; // Vector to store the movement values
+    private float myGravity = -10f; // Gravity value
 
-    public Transform cameraTransform;
-    public float maxHealth = 100f;
-    private float currentHealth;
+    public Transform cameraTransform; // Reference to the camera's transform
+    public float maxHealth = 100f; // Maximum health of the player
+    private float currentHealth; // Current health of the player
 
-    public float attackRange = 10f;
-    public GameObject projectile;
-    public Transform gunTip;
-    public float timeBetweenAttacks = 1f;
-    private bool alreadyAttacked;
-    private Transform targetEnemy;
+    public float attackRange = 10f; // Range of the player's attack
+    public GameObject projectile; // Reference to the projectile prefab
+    public Transform gunTip; // Reference to the gun tip transform  
+    public float timeBetweenAttacks = 1f; // Time between attacks
+    private bool alreadyAttacked; // Boolean to check if the player has already attacked
+    private Transform targetEnemy; // Reference to the target enemy
 
-    [SerializeField] private GameObject healthBar;
-    private Slider healthSlider;
+    [SerializeField] private GameObject healthBar; // Reference to the health bar GameObject
+    private Slider healthSlider; // Reference to the health bar Slider component
 
     // Pickup and double damage variables
-    private int pickupCount = 0;
-    private bool isDoubleDamageActive = false;
-    private float doubleDamageDuration = 20f;
-    private float doubleDamageTimer = 0f;
-    private float baseDamage = 10f;
+    private int pickupCount = 0; // Number of pickups collected
+    private bool isDoubleDamageActive = false; // Boolean to check if double damage is active
+    private float doubleDamageDuration = 20f; // Duration of double damage
+    private float doubleDamageTimer = 0f; 
+    private float baseDamage = 10f; // Base damage of the player
 
-    [SerializeField] private GameObject pickupBar;
-    private Slider pickupSlider;
-    private int maxPickups = 5;
+    [SerializeField] private GameObject pickupBar; // Reference to the pickup bar GameObject
+    private Slider pickupSlider; // Reference to the pickup bar Slider component
+    private int maxPickups = 5; // Maximum number of pickups to collect
 
     void Start()
     {
-        myCC = GetComponent<CharacterController>();
+        myCC = GetComponent<CharacterController>(); // Get the CharacterController component
         if (cameraTransform == null && Camera.main != null)
         {
             cameraTransform = Camera.main.transform;
         }
-        currentHealth = maxHealth;
-        alreadyAttacked = false;
+        currentHealth = maxHealth; // Set current health to max health at the start
+        alreadyAttacked = false; 
 
-        if (healthBar != null)
+        if (healthBar != null) // Check if healthBar reference is set in the Inspector
         {
             healthSlider = healthBar.GetComponent<Slider>();
             if (healthSlider != null)
@@ -53,14 +53,6 @@ public class PlayerMove : MonoBehaviour
                 healthSlider.maxValue = maxHealth;
                 healthSlider.value = currentHealth;
             }
-            else
-            {
-                Debug.LogError("No Slider component found on the healthBar GameObject!");
-            }
-        }
-        else
-        {
-            Debug.LogError("HealthBar reference is not set in the Inspector!");
         }
 
         if (pickupBar != null)
@@ -71,15 +63,9 @@ public class PlayerMove : MonoBehaviour
                 pickupSlider.maxValue = maxPickups;
                 pickupSlider.value = pickupCount;
             }
-            else
-            {
-                Debug.LogError("No Slider component found on the pickupBar GameObject!");
-            }
+   
         }
-        else
-        {
-            Debug.LogError("PickupBar reference is not set in the Inspector!");
-        }
+        
     }
 
     void Update()
@@ -102,32 +88,32 @@ public class PlayerMove : MonoBehaviour
 
     void GetInput()
     {
-        inputVector = new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical")).normalized;
+        inputVector = new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical")).normalized; // Get the input values
 
         if (cameraTransform != null)
         {
-            Vector3 forward = cameraTransform.forward;
+            Vector3 forward = cameraTransform.forward; 
             Vector3 right = cameraTransform.right;
-            forward.y = 0f;
-            right.y = 0f;
-            forward.Normalize();
-            right.Normalize();
-            movementVector = (forward * inputVector.z + right * inputVector.x) * playerSpeed;
+            forward.y = 0f; // Set the y value to 0 to prevent the player from moving up
+            right.y = 0f; 
+            forward.Normalize(); // Normalize vectors to get the direction
+            right.Normalize(); 
+            movementVector = (forward * inputVector.z + right * inputVector.x) * playerSpeed; // Calculate the movement vector
         }
-        movementVector += Vector3.up * myGravity;
+        movementVector += Vector3.up * myGravity; // Add gravity to the movement vector
     }
 
     void MovePlayer()
     {
-        myCC.Move(movementVector * Time.deltaTime);
+        myCC.Move(movementVector * Time.deltaTime); // Move the player
     }
 
     void RotatePlayer()
     {
-        if (inputVector != Vector3.zero)
+        if (inputVector != Vector3.zero) 
         {
-            Quaternion targetRotation = Quaternion.LookRotation(new Vector3(movementVector.x, 0f, movementVector.z));
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+            Quaternion targetRotation = Quaternion.LookRotation(new Vector3(movementVector.x, 0f, movementVector.z)); // Calculate the target rotation
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime); // Rotate the player
         }
     }
 
@@ -150,20 +136,20 @@ public class PlayerMove : MonoBehaviour
 
     void AttackEnemy()
     {
-        if (targetEnemy != null && !alreadyAttacked)
+        if (targetEnemy != null && !alreadyAttacked) // Check if there is a target enemy and the player has not already attacked
         {
-            transform.LookAt(targetEnemy);
+            transform.LookAt(targetEnemy); // Makes the player look at the target enemy
             Vector3 directionToEnemy = (targetEnemy.position - gunTip.position).normalized;
-            Vector3 spawnPosition = gunTip.position + directionToEnemy * 0.5f;
+            Vector3 spawnPosition = gunTip.position + directionToEnemy * 0.5f; // Spawn the projectile slightly in front of the gun tip
             GameObject bullet = Instantiate(projectile, spawnPosition, Quaternion.LookRotation(directionToEnemy));
             Rigidbody rb = bullet.GetComponent<Rigidbody>();
-            float bulletSpeed = 32f;
+            float bulletSpeed = 32f; // Speed of the bullet
             rb.linearVelocity = directionToEnemy * bulletSpeed;
 
             Bullet bulletScript = bullet.GetComponent<Bullet>();
             if (bulletScript != null)
             {
-                bulletScript.damage = isDoubleDamageActive ? baseDamage * 2 : baseDamage;
+                bulletScript.damage = isDoubleDamageActive ? baseDamage * 2 : baseDamage; // Double damage if active
             }
 
             alreadyAttacked = true;
