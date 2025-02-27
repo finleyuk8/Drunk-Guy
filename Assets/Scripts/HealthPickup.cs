@@ -2,15 +2,18 @@ using UnityEngine;
 
 public class HealthPickup : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    private float healAmount = 10f; // Heals player for 10 health
 
-    // Update is called once per frame
-    void Update()
+    private void OnTriggerEnter(Collider other)
     {
-        
+        if (other.CompareTag("Player"))
+        {
+            PlayerMove player = other.GetComponent<PlayerMove>();
+            if (player != null)
+            {
+                player.Heal(healAmount);
+                Destroy(gameObject); // Remove pickup after collection
+            }
+        }
     }
 }
