@@ -21,8 +21,19 @@ public class PlayerMove : MonoBehaviour
     private bool alreadyAttacked;
     private Transform targetEnemy;
 
-    [SerializeField] private GameObject healthBar; // Reference to the healthbar GameObject
-    private Slider healthSlider; // We'll get the Slider component from the healthBar
+    [SerializeField] private GameObject healthBar;
+    private Slider healthSlider;
+
+    // Pickup and double damage variables
+    private int pickupCount = 0;
+    private bool isDoubleDamageActive = false;
+    private float doubleDamageDuration = 20f;
+    private float doubleDamageTimer = 0f;
+    private float baseDamage = 10f;
+
+    [SerializeField] private GameObject pickupBar;
+    private Slider pickupSlider;
+    private int maxPickups = 5;
 
     void Start()
     {
@@ -34,7 +45,6 @@ public class PlayerMove : MonoBehaviour
         currentHealth = maxHealth;
         alreadyAttacked = false;
 
-        // Get the Slider component from the healthbar GameObject
         if (healthBar != null)
         {
             healthSlider = healthBar.GetComponent<Slider>();
@@ -52,6 +62,24 @@ public class PlayerMove : MonoBehaviour
         {
             Debug.LogError("HealthBar reference is not set in the Inspector!");
         }
+
+        if (pickupBar != null)
+        {
+            pickupSlider = pickupBar.GetComponent<Slider>();
+            if (pickupSlider != null)
+            {
+                pickupSlider.maxValue = maxPickups;
+                pickupSlider.value = pickupCount;
+            }
+            else
+            {
+                Debug.LogError("No Slider component found on the pickupBar GameObject!");
+            }
+        }
+        else
+        {
+            Debug.LogError("PickupBar reference is not set in the Inspector!");
+        }
     }
 
     void Update()
@@ -61,6 +89,15 @@ public class PlayerMove : MonoBehaviour
         RotatePlayer();
         FindNearestEnemy();
         AttackEnemy();
+
+        if (isDoubleDamageActive)
+        {
+            doubleDamageTimer -= Time.deltaTime;
+            if (doubleDamageTimer <= 0)
+            {
+                EndDoubleDamage();
+            }
+        }
     }
 
     void GetInput()
@@ -123,6 +160,12 @@ public class PlayerMove : MonoBehaviour
             float bulletSpeed = 32f;
             rb.linearVelocity = directionToEnemy * bulletSpeed;
 
+            Bullet bulletScript = bullet.GetComponent<Bullet>();
+            if (bulletScript != null)
+            {
+                bulletScript.damage = isDoubleDamageActive ? baseDamage * 2 : baseDamage;
+            }
+
             alreadyAttacked = true;
             Invoke(nameof(ResetAttack), timeBetweenAttacks);
         }
@@ -138,7 +181,6 @@ public class PlayerMove : MonoBehaviour
         currentHealth -= damage;
         Debug.Log($"Player took {damage} damage. Current health: {currentHealth}");
 
-        // Update the health slider
         if (healthSlider != null)
         {
             healthSlider.value = currentHealth;
@@ -154,6 +196,60 @@ public class PlayerMove : MonoBehaviour
     {
         Debug.Log("Player has died!");
         gameObject.SetActive(false);
+    }
+
+    public void CollectPickup()
+    {
+        if (!isDoubleDamageActive)
+        {
+            pickupCount++;
+            Debug.Log($"Collected pickup! Total: {pickupCount}");
+
+            if (pickupSlider != null)
+            {
+                pickupSlider.value = pickupCount;
+            }
+
+            if (pickupCount >= maxPickups)
+            {
+                StartDoubleDamage();
+            }
+        }
+    }
+
+    private void StartDoubleDamage()
+    {
+        isDoubleDamageActive = true;
+        doubleDamageTimer = doubleDamageDuration;
+        pickupCount = 0;
+        Debug.Log("Double damage activated for 20 seconds!");
+    }
+
+    private void EndDoubleDamage()
+    {
+        isDoubleDamageActive = false;
+        pickupCount = 0;
+        if (pickupSlider != null)
+        {
+            pickupSlider.value = pickupCount;
+        }
+        Debug.Log("Double damage ended!");
+    }
+
+    // New method for healing
+    public void Heal(float amount)
+    {
+        currentHealth += amount;
+        if (currentHealth > maxHealth)
+        {
+            currentHealth = maxHealth; // Cap health at maxHealth
+        }
+        Debug.Log($"Player healed for {amount}. Current health: {currentHealth}");
+
+        if (healthSlider != null)
+        {
+            healthSlider.value = currentHealth; // Update health slider
+        }
     }
 
     private void OnDrawGizmosSelected()

@@ -826,14 +826,14 @@ MonoBehaviour:
   whatIsPlayer:
     serializedVersion: 2
     m_Bits: 512
-  health: 20
+  health: 25
   walkPoint: {x: 0, y: 0, z: 0}
   walkPointRange: 100
   timeBetweenAttacks: 1.5
   projectile: {fileID: 3280233001893780464, guid: 378df8cb59924c64ab3d0749ae85b249, type: 3}
   gunTip: {fileID: 3883092838732509473}
   sightRange: 50
-  attackRange: 5
+  attackRange: 10
   playerInSightRange: 1
   playerInAttackRange: 0
 --- !u!136 &141027504608494123
